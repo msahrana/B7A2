@@ -1,20 +1,13 @@
-import express, {
-    type Application,
-    type Request,
-    type Response,
-} from 'express';
+import app from './app';
+import config from './config';
+import { initDB } from './db';
 
-const app: Application = express();
-const port = 5000;
+const main = () => {
+    initDB();
 
-app.use(express.json())
+    app.listen(config.port, () => {
+        console.log(`Express app listening on port ${config.port}`);
+    });
+};
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Welcome Our DevPulse  Site ...!');
-});
-
-app.post('/api/auth/signup', (req , res)=>{})
-
-app.listen(port, () => {
-    console.log(`Express app listening on port ${port}`);
-});
+main();
