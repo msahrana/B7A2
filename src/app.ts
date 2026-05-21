@@ -3,21 +3,16 @@ import express, {
     type Request,
     type Response,
 } from 'express';
-import {Pool} from 'pg'
+import { authRoute } from './modules/auth/auth.routes';
 
 const app: Application = express();
-const port = 5000;
 
-app.use(express.json())
-
-const pool = new Pool({
-    connectionString: ''
-})
+app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Welcome Our DevPulse  Site ...!');
 });
 
-app.post('/api/auth/signup', (req , res)=>{})
+app.use('/api/auth', authRoute);
 
 export default app;

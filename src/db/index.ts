@@ -35,7 +35,7 @@ export const initDB = async () => {
             `);
 
         console.log('DevPulse Database connected successfully !');
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.log(error);
     }
 };
