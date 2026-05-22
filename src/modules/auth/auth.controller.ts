@@ -22,17 +22,18 @@ const registerUser = async (req: Request, res: Response) => {
     }
 };
 
-const loginUser = async(req: Request, res: Response)=>{
+const getAllUser = async (req: Request, res: Response) => {
+    // console.log("Controller", req.user);
     try {
-        const result = await authService.loginUserIntoDB(req.body)
-        
+        const result = await authService.getAllUsersFromDB();
+
         return sendResponse(res, {
-            statusCode: 200,
+            statusCode: 201,
             success: true,
-            message: 'Login successful',
-            data: result,
+            message: 'All Users received successfully',
+            data: result.rows,
         });
-    } catch (error:any) {
+    } catch (error: any) {
         return sendResponse(res, {
             statusCode: 500,
             success: false,
@@ -40,8 +41,30 @@ const loginUser = async(req: Request, res: Response)=>{
             error: error,
         });
     }
-}
+};
+
+const loginUser = async (req: Request, res: Response) => {
+    try {
+        const result = await authService.loginUserIntoDB(req.body);
+
+        return sendResponse(res, {
+            statusCode: 200,
+            success: true,
+            message: 'Login successful',
+            data: result,
+        });
+    } catch (error: any) {
+        return sendResponse(res, {
+            statusCode: 500,
+            success: false,
+            message: error.message,
+            error: error,
+        });
+    }
+};
 
 export const authController = {
-    registerUser, loginUser
+    registerUser,
+    loginUser,
+    getAllUser,
 };

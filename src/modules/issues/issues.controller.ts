@@ -4,7 +4,16 @@ import { issueService } from './issues.service';
 
 const createIssue = async (req: Request, res: Response) => {
     try {
-        const result = await issueService.createIssueIntoDB(req.body);
+        // check id
+        const reporter_id = req.user?.id;
+
+        // destructure 
+        const payload = {
+            ...req.body,
+            reporter_id,
+        };
+
+        const result = await issueService.createIssueIntoDB(payload);
         
         return sendResponse(res, {
             statusCode: 201,

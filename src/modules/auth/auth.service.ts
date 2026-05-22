@@ -2,8 +2,9 @@ import bcrypt from 'bcrypt';
 import { pool } from '../../db';
 import jwt from 'jsonwebtoken';
 import config from '../../config';
+import type { IUser } from './auth.interface';
 
-const registerUserIntoDB = async (payload: any) => {
+const registerUserIntoDB = async (payload: IUser) => {
     const { name, email, password, role } = payload;
     const hashPassword = await bcrypt.hash(password, 8);
 
@@ -15,6 +16,14 @@ const registerUserIntoDB = async (payload: any) => {
         `,
         [name, email, hashPassword, role],
     );
+    delete result.rows[0].password;
+    return result;
+};
+
+const getAllUsersFromDB = async () => {
+    const result = await pool.query(`
+            SELECT * FROM users
+            `);
     delete result.rows[0].password;
     return result;
 };
@@ -45,15 +54,15 @@ const loginUserIntoDB = async (payload: {
         throw new Error('Password does not match!');
     }
 
-    // 3. Generate Token
+    // 3. Generate payload
     const jwtPayload = {
         id: user.id,
         name: user.name,
         role: user.role,
-        is_active: user.is_active,
         email: user.email,
     };
 
+    // 4. Generate Token
     const token = jwt.sign(jwtPayload, config.secret as string, {
         expiresIn: '1d',
     });
@@ -71,4 +80,5 @@ const loginUserIntoDB = async (payload: {
 export const authService = {
     registerUserIntoDB,
     loginUserIntoDB,
+    getAllUsersFromDB,
 };
