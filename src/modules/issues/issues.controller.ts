@@ -51,8 +51,8 @@ const getAllIssues = async (req: Request, res: Response) => {
 };
 
 const getSingleIssue = async (req: Request, res: Response) => {
-    const { id } = req.params;
     try {
+        const { id } = req.params;
         const result = await issueService.getSingleIssueFromDB(id as string);
 
         return sendResponse(res, {
@@ -71,9 +71,8 @@ const getSingleIssue = async (req: Request, res: Response) => {
 };
 
 const updateIssue = async (req: Request, res: Response) => {
-    
     try {
-         const { id } = req.params;
+        const { id } = req.params;
         const user = req.user;
 
         if (!user) {
@@ -117,9 +116,52 @@ const updateIssue = async (req: Request, res: Response) => {
     }
 };
 
+const deleteIssue = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+
+        if (!user) {
+            throw new Error('Unauthorized');
+        }
+
+        if (user.role !== 'maintainer') {
+            return sendResponse(res, {
+                statusCode: 403,
+                success: false,
+                message: 'Only maintainer can delete issues',
+            });
+        }
+
+        const deletedIssue = await issueService.deleteIssueIntoDB(id as string);
+
+        if (!deletedIssue) {
+            return sendResponse(res, {
+                statusCode: 404,
+                success: false,
+                message: 'Issue not found',
+            });
+        }
+
+        return sendResponse(res, {
+            statusCode: 200,
+            success: true,
+            message: 'Issue deleted successfully',
+        });
+    } catch (error: any) {
+        return sendResponse(res, {
+            statusCode: 500,
+            success: false,
+            message: error.message,
+            error: error,
+        });
+    }
+};
+
 export const issueController = {
     createIssue,
     getAllIssues,
     getSingleIssue,
     updateIssue,
+    deleteIssue,
 };
