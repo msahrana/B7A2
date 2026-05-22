@@ -24,6 +24,49 @@ const createIssueIntoDB = async (payload: any) => {
     return result.rows[0];
 };
 
+const getAllIssuesIntoDB = async () => {
+    // 1. get issues
+    const issuesResult = await pool.query(`
+        SELECT * FROM issues ORDER BY created_at DESC
+    `);
+
+    const issues = issuesResult.rows;
+
+    if (issues.length === 0) return [];
+
+    // 2. extract reporter ids
+    const reporterIds = [...new Set(issues.map((i) => i.reporter_id))];
+
+    // 3. get users
+    const usersResult = await pool.query(
+        `
+        SELECT id, name, role
+        FROM users
+        WHERE id = ANY($1)
+        `,
+        [reporterIds],
+    );
+
+    const users = usersResult.rows;
+
+    // 4. map users
+    const userMap = new Map();
+    users.forEach((u) => userMap.set(u.id, u));
+
+    // 5. attach reporter
+    return issues.map((issue) => ({
+        id: issue.id,
+        title: issue.title,
+        description: issue.description,
+        type: issue.type,
+        status: issue.status,
+        reporter: userMap.get(issue.reporter_id) || null,
+        created_at: issue.created_at,
+        updated_at: issue.updated_at,
+    }));
+};
+
 export const issueService = {
     createIssueIntoDB,
+    getAllIssuesIntoDB,
 };
