@@ -103,8 +103,38 @@ const getSingleIssueFromDB = async (id: string) => {
     };
 };
 
+const updateSingleIssueFromDB = async (payload: any, id: string) => {
+    const { title, description, type, status, reporter_id } = payload;
+
+    const result = await pool.query(
+        `
+        UPDATE issues 
+        SET 
+        title = COALESCE($1, title),
+        description = COALESCE($2, description),
+        type = COALESCE($3, type),
+        status = COALESCE($4, status),
+        reporter_id = COALESCE($5, reporter_id),
+        updated_at = NOW()
+        WHERE id = $6
+        RETURNING *
+        `,
+        [title, description, type, status, reporter_id, id],
+    );
+    delete result.rows[0].password;
+    return result;
+};
+
+const getIssueById = async (id: string) => {
+    const result = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id]);
+
+    return result.rows[0];
+};
+
 export const issueService = {
     createIssueIntoDB,
     getAllIssuesIntoDB,
     getSingleIssueFromDB,
+    updateSingleIssueFromDB,
+    getIssueById,
 };
