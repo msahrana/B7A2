@@ -1,59 +1,38 @@
 import { pool } from '../../db';
-import type { NewIssue } from '../../types';
-
-const createIssueIntoDB = async (payload: NewIssue) => {
+const createIssueIntoDB = async (payload) => {
     const { title, description, type, reporter_id } = payload;
-
     // First check if the user is exists
-    const user = await pool.query(
-        `
+    const user = await pool.query(`
         SELECT * FROM users WHERE id=$1
-        `,
-        [reporter_id],
-    );
-
+        `, [reporter_id]);
     if (user.rows.length === 0) {
         throw new Error('User not exists!');
     }
-
-    const result = await pool.query(
-        `
+    const result = await pool.query(`
             INSERT INTO issues (title, description, type, reporter_id) VALUES($1, $2, $3, $4) RETURNING *
-            `,
-        [title, description, type, reporter_id],
-    );
+            `, [title, description, type, reporter_id]);
     return result.rows[0];
 };
-
 const getAllIssuesIntoDB = async () => {
     // 1. get issues
     const issuesResult = await pool.query(`
         SELECT * FROM issues ORDER BY created_at DESC
     `);
-
     const issues = issuesResult.rows;
-
-    if (issues.length === 0) return [];
-
+    if (issues.length === 0)
+        return [];
     // 2. extract reporter ids
     const reporterIds = [...new Set(issues.map((i) => i.reporter_id))];
-
     // 3. get users
-    const usersResult = await pool.query(
-        `
+    const usersResult = await pool.query(`
         SELECT id, name, role
         FROM users
         WHERE id = ANY($1)
-        `,
-        [reporterIds],
-    );
-
+        `, [reporterIds]);
     const users = usersResult.rows;
-
     // 4. map users
     const userMap = new Map();
     users.forEach((u) => userMap.set(u.id, u));
-
     // 5. attach reporter
     return issues.map((issue) => ({
         id: issue.id,
@@ -66,31 +45,21 @@ const getAllIssuesIntoDB = async () => {
         updated_at: issue.updated_at,
     }));
 };
-
-const getSingleIssueFromDB = async (id: string) => {
+const getSingleIssueFromDB = async (id) => {
     // 1. get issues
-    const issuesResult = await pool.query(
-        `
+    const issuesResult = await pool.query(`
         SELECT * FROM issues WHERE id = $1
-    `,
-        [id],
-    );
-
+    `, [id]);
     if (issuesResult.rows.length === 0) {
         throw new Error('Issue not found');
     }
     const issues = issuesResult.rows[0];
-
     // 3. get users
-    const usersResult = await pool.query(
-        `
+    const usersResult = await pool.query(`
         SELECT id, name, role
         FROM users
         WHERE id = ($1)
-        `,
-        [issues.reporter_id],
-    );
-
+        `, [issues.reporter_id]);
     // 5. attach reporter
     return {
         id: issues.id,
@@ -103,12 +72,9 @@ const getSingleIssueFromDB = async (id: string) => {
         updated_at: issues.updated_at,
     };
 };
-
-const updateSingleIssueFromDB = async (payload: any, id: string) => {
+const updateSingleIssueFromDB = async (payload, id) => {
     const { title, description, type, status, reporter_id } = payload;
-
-    const result = await pool.query(
-        `
+    const result = await pool.query(`
         UPDATE issues 
         SET 
         title = COALESCE($1, title),
@@ -119,29 +85,20 @@ const updateSingleIssueFromDB = async (payload: any, id: string) => {
         updated_at = NOW()
         WHERE id = $6
         RETURNING *
-        `,
-        [title, description, type, status, reporter_id, id],
-    );
+        `, [title, description, type, status, reporter_id, id]);
     delete result.rows[0].password;
     return result;
 };
-
-const getIssueById = async (id: string) => {
+const getIssueById = async (id) => {
     const result = await pool.query(`SELECT * FROM issues WHERE id = $1`, [id]);
-
     return result.rows[0];
 };
-
-const deleteIssueIntoDB = async (id: string) => {
-    const result = await pool.query(
-        `
+const deleteIssueIntoDB = async (id) => {
+    const result = await pool.query(`
             DELETE FROM issues WHERE id = $1
-            `,
-        [id],
-    );
+            `, [id]);
     return result;
 };
-
 export const issueService = {
     createIssueIntoDB,
     getAllIssuesIntoDB,
@@ -150,3 +107,4 @@ export const issueService = {
     getIssueById,
     deleteIssueIntoDB,
 };
+//# sourceMappingURL=issues.service.js.map
