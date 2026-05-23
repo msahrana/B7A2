@@ -1,4 +1,4 @@
-Live URL:
+Live URL:https://b7-a2-drab.vercel.app
 
 Project Name: DevPulse Backend Server
 
@@ -26,6 +26,19 @@ bcrypt – Password security
 jsonwebtoken – Token system
 
 Setup Steps:
+======================================npm init
+npm init -y
+======================================tsconfig.json file create
+tsc --init
+======================================tsx install in Devdepencec
+npm install -D tsx
+======================================typescript install in Devdepencec
+npm install -D typescript
+======================================express install
+npm i express
+======================================env
+npm i dotenv
+
 
 API endpoint list:
 POST /api/auth/signup
@@ -41,3 +54,4 @@ Users:=>[(id, name, email, password, role (contributor | maintainer), created_at
 Issues:=> [(it, title, description, type (bug | feature_request), status (open | in_progress | resolved), reporter_id, created_at, updated_at)]
 
 Keep it clear and professional:
+You can clone the git and work successfully. After clone git you should npm i. Then the site is working. 
